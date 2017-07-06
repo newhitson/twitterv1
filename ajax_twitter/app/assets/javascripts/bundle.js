@@ -68,11 +68,18 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 const FollowToggle = __webpack_require__(1);
+const UsersSearch = __webpack_require__(3);
+
 
 $(() => {
   let $buttons = $('button.follow-toggle');
   $buttons.each(function(idx,button){
     new FollowToggle(button);
+  });
+
+  let $searches = $('nav.users-search');
+  $searches.each(function(idx, search){
+    new UsersSearch(search);
   });
 });
 
@@ -179,10 +186,59 @@ const APIUtil = {
       type: "DELETE",
       dataType: "json"
     });
+  },
+
+  searchUsers: (queryVal, success)=>{
+    return $.ajax({
+      url: `/users/search`,
+      type: "GET",
+      dataType: "json",
+      data: {query: queryVal}
+    });
   }
+
 };
 
 module.exports = APIUtil;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const APIUtil = __webpack_require__(2);
+
+class UsersSearch {
+  constructor(el) {
+    this.$el = $(el);
+    this.$input = $(el).children("input");
+    this.$ul = $(el).children("ul");
+    this.handleInput();
+  }
+
+  handleInput() {
+    this.$input.keypress(event => {
+      console.log(this.$input.val());
+      APIUtil.searchUsers(this.$input.val())
+      .then(results => this.renderResults(results));
+
+    });
+  }
+
+
+  renderResults (searchResults){
+    this.$ul.empty();
+    searchResults.forEach((result) => {
+      let li = $($('<li>')
+      .text(result.username));
+      li.appendTo(this.$ul);
+    });
+  }
+
+}
+
+
+module.exports = UsersSearch;
 
 
 /***/ })
